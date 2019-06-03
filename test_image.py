@@ -14,6 +14,20 @@ import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
+class NotFoundError(Exception):
+    pass
+
+def get_unused_dir_num(pdir, pref=None):
+    os.makedirs(pdir, exist_ok=True)
+    dir_list = os.listdir(pdir)
+    for i in range(1000):
+        search_dir_name = "" if pref is None else (
+            pref + "_" ) + '%03d' % i
+        if search_dir_name not in dir_list:
+            return os.path.join(pdir, search_dir_name)
+    raise NotFoundError('Error')
+
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--class", required=True,
@@ -22,8 +36,6 @@ ap.add_argument("-m", "--model", default=None,
 	help="path to trained model model")
 ap.add_argument("-i", "--image",
 	help="path to input image")
-ap.add_argument("-d", "--directory",
-	help="path to input image directory")
 
 args = vars(ap.parse_args())
 if(args["image"] is None and args["directory"] is None):
@@ -31,13 +43,15 @@ if(args["image"] is None and args["directory"] is None):
 
 class_path=args["class"]
 model_path = args["model"] if args["model"] != None else class_path.split(".")[0]+".h5"
+image_path = args["image"]
+output_dir = get_unused_dir_num(pdir="results", pref=None)
+
+os.makedirs(output_dir, exist_ok=True)
 
 # load the image
-if(args["image"] is not None):
-	image = cv2.imread(args["image"])
-else:
-	imagePaths = list(paths.list_images(args["directory"]))
-	image = cv2.imread(imagePaths[random.randrange(len(imagePaths))])
+
+image = cv2.imread(image_path)
+
 orig = image.copy()
 
 # load the trained convolutional neural network
@@ -66,14 +80,11 @@ labels.append("{}".format(class_names))
 labels.append(" : ".join(["{:.2f}%".format(100*score) for score in predict[0]]))
 
 # draw the label on the image
-output = imutils.resize(orig, width=400)
+output_image = imutils.resize(orig, width=400)
 for i, label in enumerate(labels):
-	cv2.putText(output, label, (10, 25 * (i+1)),  cv2.FONT_HERSHEY_SIMPLEX,
+	cv2.putText(output_image, label, (10, 25 * (i+1)),  cv2.FONT_HERSHEY_SIMPLEX,
 		0.7, (0, 255, 0), 2)
 
 
-# show the output image
-cv2.imshow("Output", output)
-
-while( cv2.getWindowProperty('Output',cv2.WND_PROP_VISIBLE) != 0):
-	cv2.waitKey(1)
+output_path = os.path.join(output_dir, os.path.basename(image_path))
+cv2.imwrite(output_path, output_image)
