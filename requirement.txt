@@ -1,5 +1,5 @@
 opencv_python
-h5py~=3.1.0
+h5py==2.9.0
 numpy~=1.19.2
 imutils
 matplotlib
