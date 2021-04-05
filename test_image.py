@@ -78,8 +78,6 @@ def get_unused_dir_num(pdir, pref=None):
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-c", "--class", required=True,
-	help="path to class file")
 ap.add_argument("-m", "--model", default=None,
 	help="path to trained model model")
 ap.add_argument("-i", "--image",
@@ -89,7 +87,7 @@ args = vars(ap.parse_args())
 if(args["image"] is None and args["directory"] is None):
 	ap.error("missing arguments -d / --directory and -i / --images")
 
-class_path=args["class"]
+class_path = os.path.join(os.path.dirname(args["model"]), "classes.txt")
 model_path = args["model"] if args["model"] != None else class_path.split(".")[0]+".h5"
 image_path = args["image"]
 output_dir = get_unused_dir_num(pdir="results", pref=None)
