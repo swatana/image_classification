@@ -31,6 +31,10 @@ def main():
                         help="[Multi] Path to train file")
     parser.add_argument("--class_file", type=str,
                         help="[Multi] Path to class names file")
+    parser.add_argument("--width", type=int, default=50,
+                        help="image width")
+    parser.add_argument("--height", type=int, default=28,
+                        help="image height")
 
     args = parser.parse_args()
 
@@ -40,9 +44,8 @@ def main():
     batch_size = args.batch_size
     num_epochs = args.epochs
     init_lr = args.learning_rate
-    image_size = 28 
 
-    trainer = SingleLabelNetworkTrainer(args.dataset, image_size,
+    trainer = SingleLabelNetworkTrainer(args.dataset, args.width, args.height,
                                         args.logs_dir)
     num_classes = trainer.num_classes
     # initialize the model
@@ -55,7 +58,7 @@ def main():
         base_model = load_model(args.model_path)
     else:
         from lenet import LeNet
-        base_model = LeNet.build(width=image_size, height=image_size, depth=3, classes=num_classes)
+        base_model = LeNet.build(width=args.width, height=args.height, depth=3, classes=num_classes)
 
     if init_lr is None:
         init_lr = 1e-3 if args.full_training else 1e-5

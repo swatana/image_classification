@@ -17,7 +17,7 @@ from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 
 class SingleLabelNetworkTrainer():
-    def __init__(self, dataset_path, image_size, logs_dir=None):
+    def __init__(self, dataset_path, image_width, image_height, logs_dir=None):
 
         if dataset_path[-1] == '/':
             dataset_path = dataset_path[:-1]
@@ -34,7 +34,8 @@ class SingleLabelNetworkTrainer():
                 class_names.append(x)
         num_classes = len(class_names)
         self.num_classes = num_classes
-        self.image_size = image_size
+        self.image_width = image_width
+        self.image_height = image_height
 
     def train(self, init_lr, batch_size, num_epochs, is_fine_tuning,
               is_resuming):
@@ -119,7 +120,7 @@ class SingleLabelNetworkTrainer():
         with open(os.path.join(self.logs_dir, "config.txt"), 'w') as f:
             f.write("%s\n" % self.dataset_path)
 
-        data = load_images(imagePaths, self.image_size)
+        data = load_images(imagePaths, self.image_width, self.image_height)
         labels = np.array(labels)
 
         # partition the data into training and testing splits using 75% of
