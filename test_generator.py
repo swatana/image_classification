@@ -1,4 +1,6 @@
 import os
+import glob
+import random
 import argparse
 
 
@@ -7,6 +9,8 @@ class NotFoundError(Exception):
 
 
 def get_unused_test_data_dir_num():
+    test_data_path = os.path.join(os.path.dirname(__file__), 'test_data')
+    os.makedirs(test_data_path, exist_ok=True)
     dir_list = os.listdir(path='./test_data')
     for i in range(1000):
         search_dir_name = '%03d' % i
@@ -15,7 +19,7 @@ def get_unused_test_data_dir_num():
     raise NotFoundError('Error')
 
 
-def test_generator(data_path):
+def test_generator(data_path, test_per):
     output_dir = os.path.join("test_data", get_unused_test_data_dir_num())
     os.makedirs(output_dir, exist_ok=True)
     print(output_dir)
@@ -25,15 +29,25 @@ def test_generator(data_path):
         if(os.path.isdir(data_path + "/" + x)):
             classes.append(x)
 
-    with open(os.path.join(output_dir, "test.txt"), 'w') as f:
-        for i, x in enumerate(classes):
-            for path in os.listdir(os.path.join(data_path, x)):
-                f.write("%s %d\n" % (os.path.join(data_path, x, path), i))
+    with open(os.path.join(output_dir, "train_list.txt"), 'w') as f_train:
+        with open(os.path.join(output_dir, "test_list.txt"), 'w') as f_test:
+            for i, x in enumerate(classes):
+
+                ext = ["png", "jpg", "gif"]
+                pathes = []
+                for e in ext:
+                    pathes.extend(glob.glob(os.path.join(data_path, x, "*." + e)))
+                random.shuffle(pathes)
+                test_siz = int(len(pathes) * test_per)
+                for path in pathes[:test_siz]:
+                    f_test.write("%s %d\n" % (os.path.join(data_path, x, path), i))
+                for path in pathes[test_siz:]:
+                    f_train.write("%s %d\n" % (os.path.join(data_path, x, path), i))
 
     with open(os.path.join(output_dir, "classes.txt"), 'w') as f:
         for x in classes:
             f.write("%s\n" % x)
-    print("Generated test.txt and classes.txt in {}".format(output_dir))
+    print("Generated train_list.txt, test_list.txt and classes.txt in {}".format(output_dir))
     return output_dir
 
 
@@ -42,7 +56,8 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--data", required=True,
                     help="path to image directory")
+    ap.add_argument("-t", "--test_per", default=0.15,
+                    help="test data percentage")
 
     args = vars(ap.parse_args())
-    data_path = args["data"]
-    test_generator(data_path=data_path)
+    test_generator(args["data"], args["test_per"])
