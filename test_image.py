@@ -106,10 +106,7 @@ orig = image.copy()
 print("[INFO] loading network...")
 model = load_model(model_path)
 
-model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
-# image_size = 28
-# model_image_size = (image_size, image_size)
-print(model_image_size)
+model_image_size = (int(model.layers[0].input.shape[2]), int(model.layers[0].input.shape[1]))
 
 # pre-process the image for classification
 image = cv2.resize(image, model_image_size)
