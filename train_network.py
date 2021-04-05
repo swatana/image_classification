@@ -31,12 +31,17 @@ def main():
                         help="[Multi] Path to train file")
     parser.add_argument("--class_file", type=str,
                         help="[Multi] Path to class names file")
+    parser.add_argument("--image_size", type=int, default=None,
+                        help="image width")
     parser.add_argument("--width", type=int, default=28,
                         help="image width")
     parser.add_argument("--height", type=int, default=28,
                         help="image height")
 
     args = parser.parse_args()
+
+    width = args.width if args.image_size is None else args.image_size
+    height = args.height if args.image_size is None else args.image_size
 
     if not args.dataset:
         parser.error("--dataset is required for single label mode")
@@ -45,7 +50,7 @@ def main():
     num_epochs = args.epochs
     init_lr = args.learning_rate
 
-    trainer = SingleLabelNetworkTrainer(args.dataset, args.width, args.height,
+    trainer = SingleLabelNetworkTrainer(args.dataset, width, height,
                                         args.logs_dir)
     num_classes = trainer.num_classes
     # initialize the model
@@ -58,7 +63,7 @@ def main():
         base_model = load_model(args.model_path)
     else:
         from lenet import LeNet
-        base_model = LeNet.build(width=args.width, height=args.height, depth=3, classes=num_classes)
+        base_model = LeNet.build(width=width, height=height, depth=3, classes=num_classes)
 
     if init_lr is None:
         init_lr = 1e-3 if args.full_training else 1e-5
