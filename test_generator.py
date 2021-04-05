@@ -1,4 +1,5 @@
 import os
+import glob
 import random
 import argparse
 
@@ -31,7 +32,11 @@ def test_generator(data_path, test_per):
     with open(os.path.join(output_dir, "train_list.txt"), 'w') as f_train:
         with open(os.path.join(output_dir, "test_list.txt"), 'w') as f_test:
             for i, x in enumerate(classes):
-                pathes = os.listdir(os.path.join(data_path, x))
+
+                ext = ["png", "jpg", "gif"]
+                pathes = []
+                for e in ext:
+                    pathes.extend(glob.glob(os.path.join(data_path, x, "*." + e)))
                 random.shuffle(pathes)
                 test_siz = int(len(pathes) * test_per)
                 for path in pathes[:test_siz]:
