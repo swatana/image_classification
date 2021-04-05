@@ -17,11 +17,10 @@ from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 
 class SingleLabelNetworkTrainer():
-    def __init__(self, dataset_path, image_width, image_height, logs_dir=None):
+    def __init__(self, train_file_path, classes_file_path, image_width, image_height, logs_dir=None):
 
-        if dataset_path[-1] == '/':
-            dataset_path = dataset_path[:-1]
-        self.dataset_path = dataset_path
+        self.train_file_path = train_file_path
+        self.classes_file_path = classes_file_path
 
         if logs_dir is None:
             logs_dir = os.path.join("logs", get_unused_log_dir_num())
@@ -29,11 +28,11 @@ class SingleLabelNetworkTrainer():
         self.logs_dir = logs_dir
 
         class_names = []
-        for x in sorted(os.listdir(self.dataset_path)):
-            if os.path.isdir(self.dataset_path + "/" + x):
-                class_names.append(x)
-        num_classes = len(class_names)
-        self.num_classes = num_classes
+        with open(self.classes_file_path) as classes_fp:
+            class_names = [line.strip() for line in classes_fp]
+            num_classes = len(class_names)
+        self.class_names = class_names
+        self.num_classes = len(class_names)
         self.image_width = image_width
         self.image_height = image_height
 
@@ -92,41 +91,35 @@ class SingleLabelNetworkTrainer():
 
     def load_dataset(self):
         print("[INFO] loading images...")
-        labels = []
-        class_names = []
-        for x in sorted(os.listdir(self.dataset_path)):
-            if os.path.isdir(self.dataset_path + "/" + x):
-                class_names.append(x)
+        all_labels = []
+        img_paths = []
 
-        num_classes = len(class_names)
+        with open(self.train_file_path) as train_fp:
+            for line in train_fp:
+                img_path, class_ids = line.split()
 
-        # grab the image paths and randomly shuffle them
-        imagePaths = sorted(list(paths.list_images(self.dataset_path)))
-        random.seed(42)
-        random.shuffle(imagePaths)
-
-        print("Processing {} images...".format(len(imagePaths)))
-        # loop over the input images
-        for imagePath in imagePaths:
-            # extract the class label from the image path and update the
-            # labels list
-            labelname = imagePath.split(os.path.sep)[-2]
-            labels.append(class_names.index(labelname))
+                img_paths.append(img_path)
+                all_labels.append(int(class_ids))
+        print(all_labels)
+        with open(self.classes_file_path) as classes_fp:
+            class_names = [line.strip() for line in classes_fp]
+            num_classes = len(class_names)
 
         with open(os.path.join(self.logs_dir, "classes.txt"), 'w') as f:
             for item in class_names:
                 f.write("%s\n" % item)
 
-        with open(os.path.join(self.logs_dir, "config.txt"), 'w') as f:
-            f.write("%s\n" % self.dataset_path)
+        data = load_images(img_paths, self.image_width, self.image_height)
+        all_labels = np.array(all_labels)
 
-        data = load_images(imagePaths, self.image_width, self.image_height)
-        labels = np.array(labels)
-
+        print(data)
+        print(all_labels)
+        # import sys
+        # sys.exit()
         # partition the data into training and testing splits using 75% of
         # the data for training and the remaining 25% for testing
         trainX, testX, trainY, testY = train_test_split(
-            data, labels, test_size=0.25, random_state=42)
+            data, all_labels, test_size=0.25, random_state=42)
 
         # convert the labels from integers to vectors
         trainY = to_categorical(trainY, num_classes=num_classes)

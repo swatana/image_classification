@@ -25,17 +25,15 @@ def main():
                         help="Resume training (won't recreate last layers)")
     parser.add_argument("-l", "--logs_dir",
                         help="Path to output logs")
-    parser.add_argument("-d", "--dataset",
-                        help="[Single] Path to input dataset")
-    parser.add_argument("--train_file", type=str,
-                        help="[Multi] Path to train file")
-    parser.add_argument("--class_file", type=str,
-                        help="[Multi] Path to class names file")
+    parser.add_argument("-t", "--train_file", type=str,
+                        help="Path to train file")
+    parser.add_argument("-c", "--class_file", type=str,
+                        help="Path to class names file")
     parser.add_argument("--image_size", type=int, default=None,
                         help="image width")
-    parser.add_argument("--width", type=int, default=28,
+    parser.add_argument("--width", type=int, default=299,
                         help="image width")
-    parser.add_argument("--height", type=int, default=28,
+    parser.add_argument("--height", type=int, default=299,
                         help="image height")
 
     args = parser.parse_args()
@@ -43,14 +41,11 @@ def main():
     width = args.width if args.image_size is None else args.image_size
     height = args.height if args.image_size is None else args.image_size
 
-    if not args.dataset:
-        parser.error("--dataset is required for single label mode")
-
     batch_size = args.batch_size
     num_epochs = args.epochs
     init_lr = args.learning_rate
 
-    trainer = SingleLabelNetworkTrainer(args.dataset, width, height,
+    trainer = SingleLabelNetworkTrainer(args.train_file, args.class_file, width, height,
                                         args.logs_dir)
     num_classes = trainer.num_classes
     # initialize the model
@@ -67,7 +62,7 @@ def main():
 
     if init_lr is None:
         init_lr = 1e-3 if args.full_training else 1e-5
-
+    base_model.summary()
     trainer.base_model = base_model
 
     trainer.train(init_lr, batch_size, num_epochs, not args.full_training,
