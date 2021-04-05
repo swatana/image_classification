@@ -10,7 +10,6 @@ from keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.image import img_to_array
 from keras.utils import to_categorical
-from lenet import LeNet
 from imutils import paths
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,9 +66,16 @@ CLASS = len(labelnames)
 # initialize the model
 print("[INFO] compiling model...")
 
-if(args["model_path"] is not None):
+if args["model_path"]  == 'mobilenet':
+	from keras.applications.mobilenet import MobileNet
+	model = MobileNet(include_top=False, weights='imagenet')
+elif args["model_path"]  == 'inception_v3':
+	from keras.applications.inception_v3 import InceptionV3
+	model = InceptionV3(include_top=True, weights='imagenet')
+elif(args["model_path"] is not None):
 	model = load_model(model_path)
 else:
+	from lenet import LeNet
 	model = LeNet.build(width=28, height=28, depth=3, classes=CLASS)
 pdir =  os.path.join("./model_data", dataset_name)
 model_output_dir = get_unused_dir_num(pdir)
@@ -89,6 +95,7 @@ random.shuffle(imagePaths)
 # loop over the input images
 for imagePath in imagePaths:
 	# load the image, pre-process it, and store it in the data list
+	# print(imagePath)
 	image = cv2.imread(imagePath)
 	image = cv2.resize(image, (28, 28))
 	image = img_to_array(image)

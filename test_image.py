@@ -11,6 +11,54 @@ from pprint import pprint
 import sys
 import os
 
+from debug_print import debug_print
+print = debug_print()
+
+from PIL import ImageFont, ImageDraw, Image
+
+class CvPutJaText:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def puttext(cls, cv_image, text, point, font_path, font_size, color=(0,0,0)):
+        font = ImageFont.truetype(font_path, font_size)
+
+        cv_rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(cv_rgb_image)
+
+        draw = ImageDraw.Draw(pil_image)
+        draw.text(point, text, fill=color, font=font)
+
+        cv_rgb_result_image = np.asarray(pil_image)
+        cv_bgr_result_image = cv2.cvtColor(cv_rgb_result_image, cv2.COLOR_RGB2BGR)
+
+        return cv_bgr_result_image
+
+def pil2cv(imgPIL):
+    imgCV_RGB = np.array(imgPIL, dtype = np.uint8)
+    imgCV_BGR = np.array(imgPIL)[:, :, ::-1]
+    return imgCV_BGR
+
+def cv2pil(imgCV):
+    imgCV_RGB = imgCV[:, :, ::-1]
+    imgPIL = Image.fromarray(imgCV_RGB)
+    return imgPIL
+
+def cv2_putText_2(img, text, org, fontFace, fontScale, color):
+    x, y = org
+    b, g, r = color
+    colorRGB = (r, g, b)
+    imgPIL = cv2pil(img)
+    draw = ImageDraw.Draw(imgPIL)
+    fontPIL = ImageFont.truetype(font = fontFace, size = fontScale)
+    w, h = draw.textsize(text, font = fontPIL)
+    draw.text(xy = (x,y-h), text = text, fill = colorRGB, font = fontPIL)
+    imgCV = pil2cv(imgPIL)
+    return imgCV
+
+
+
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
@@ -58,7 +106,10 @@ orig = image.copy()
 print("[INFO] loading network...")
 model = load_model(model_path)
 
-model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
+# model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
+image_size = 28
+model_image_size = (image_size, image_size)
+print(model_image_size)
 
 # pre-process the image for classification
 image = cv2.resize(image, model_image_size)
@@ -81,10 +132,23 @@ labels.append(" : ".join(["{:.2f}%".format(100*score) for score in predict[0]]))
 
 # draw the label on the image
 output_image = imutils.resize(orig, width=400)
+fontPIL = "Dflgs9.ttc"
+font_path = fontPIL
 for i, label in enumerate(labels):
-	cv2.putText(output_image, label, (10, 25 * (i+1)),  cv2.FONT_HERSHEY_SIMPLEX,
-		0.7, (0, 255, 0), 2)
+	# cv2.putText(output_image, label, (10, 25 * (i+1)),  cv2.FONT_HERSHEY_SIMPLEX,
+	# 	0.7, (0, 255, 0), 2)
+	# cv2_putText_2(output_image, label, (10, 25 * (i+1)),  fontPIL,
+	# 	10, (0, 255, 0))
+    output_image = CvPutJaText.puttext(output_image, label, (10, 25 * (i+1)), font_path, 20, (0, 255, 0))
+    # cv2.namedWindow("result", cv2.WINDOW_NORMAL)
+    # cv2.imshow("result", output_image)
 
+    # key = cv2.waitKey(60000)#pauses for 3 seconds before fetching next image
+    # if key == 27:#if ESC is pressed, exit loop
+    #     cv2.destroyAllWindows()
+    #     break
+# def cv2_putText_2(img, text, org, fontFace, fontScale, color):
 
-output_path = os.path.join(output_dir, os.path.basename(image_path))
-cv2.imwrite(output_path, output_image)
+    output_path = os.path.join(output_dir, os.path.basename(image_path))
+    print(output_path)
+    cv2.imwrite(output_path, output_image)
