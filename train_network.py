@@ -31,7 +31,7 @@ def main():
                         help="[Multi] Path to train file")
     parser.add_argument("--class_file", type=str,
                         help="[Multi] Path to class names file")
-    parser.add_argument("--width", type=int, default=50,
+    parser.add_argument("--width", type=int, default=28,
                         help="image width")
     parser.add_argument("--height", type=int, default=28,
                         help="image height")
