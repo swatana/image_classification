@@ -15,7 +15,7 @@ def main():
                         help="Path to base model. Default to InceptionV3")
     parser.add_argument("-b", "--batch_size", default=32, type=int,
                         help="Batch size")
-    parser.add_argument("-e", "--epochs", default=100, type=int,
+    parser.add_argument("-e", "--epochs", default=10, type=int,
                         help="Number of epochs")
     parser.add_argument("-r", "--learning_rate", type=float,
                         help="Learning rate")
