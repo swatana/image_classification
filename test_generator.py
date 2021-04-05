@@ -7,6 +7,8 @@ class NotFoundError(Exception):
 
 
 def get_unused_test_data_dir_num():
+    test_data_path = os.path.join(os.path.dirname(__file__), 'test_data')
+    os.makedirs(test_data_path, exist_ok=True)
     dir_list = os.listdir(path='./test_data')
     for i in range(1000):
         search_dir_name = '%03d' % i
