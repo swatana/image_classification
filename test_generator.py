@@ -67,7 +67,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--data", required=True,
                     help="path to image directory")
-    ap.add_argument("-t", "--test_per", default=0.02,
+    ap.add_argument("-t", "--test_per", default=0.02, type=float,
                     help="test data percentage")
 
     args = vars(ap.parse_args())
