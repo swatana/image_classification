@@ -1,7 +1,8 @@
 opencv_python
-numpy
+h5py==2.9.0
+numpy~=1.19.2
 imutils
 matplotlib
-Keras
+Keras==2.1.0
 scikit_learn
-tensorflow
+tensorflow==1.14.0

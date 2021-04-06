@@ -43,7 +43,7 @@ ap.add_argument("-m", "--model_path",default=None,
 	help="path to output model")
 args = vars(ap.parse_args())
 
-dataset_path=args["dataset"]
+dataset_path = args["dataset"]
 dataset_name = os.path.basename(os.path.dirname(dataset_path))
 model_path = args["model_path"] if args["model_path"] != None else None
 print (model_path)

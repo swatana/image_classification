@@ -16,48 +16,7 @@ print = debug_print()
 
 from PIL import ImageFont, ImageDraw, Image
 
-class CvPutJaText:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def puttext(cls, cv_image, text, point, font_path, font_size, color=(0,0,0)):
-        font = ImageFont.truetype(font_path, font_size)
-
-        cv_rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
-        pil_image = Image.fromarray(cv_rgb_image)
-
-        draw = ImageDraw.Draw(pil_image)
-        draw.text(point, text, fill=color, font=font)
-
-        cv_rgb_result_image = np.asarray(pil_image)
-        cv_bgr_result_image = cv2.cvtColor(cv_rgb_result_image, cv2.COLOR_RGB2BGR)
-
-        return cv_bgr_result_image
-
-def pil2cv(imgPIL):
-    imgCV_RGB = np.array(imgPIL, dtype = np.uint8)
-    imgCV_BGR = np.array(imgPIL)[:, :, ::-1]
-    return imgCV_BGR
-
-def cv2pil(imgCV):
-    imgCV_RGB = imgCV[:, :, ::-1]
-    imgPIL = Image.fromarray(imgCV_RGB)
-    return imgPIL
-
-def cv2_putText_2(img, text, org, fontFace, fontScale, color):
-    x, y = org
-    b, g, r = color
-    colorRGB = (r, g, b)
-    imgPIL = cv2pil(img)
-    draw = ImageDraw.Draw(imgPIL)
-    fontPIL = ImageFont.truetype(font = fontFace, size = fontScale)
-    w, h = draw.textsize(text, font = fontPIL)
-    draw.text(xy = (x,y-h), text = text, fill = colorRGB, font = fontPIL)
-    imgCV = pil2cv(imgPIL)
-    return imgCV
-
-
+from test_utils import CvPutJaText
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -78,8 +37,6 @@ def get_unused_dir_num(pdir, pref=None):
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-c", "--class", required=True,
-	help="path to class file")
 ap.add_argument("-m", "--model", default=None,
 	help="path to trained model model")
 ap.add_argument("-i", "--image",
@@ -89,7 +46,7 @@ args = vars(ap.parse_args())
 if(args["image"] is None and args["directory"] is None):
 	ap.error("missing arguments -d / --directory and -i / --images")
 
-class_path=args["class"]
+class_path = os.path.join(os.path.dirname(args["model"]), "classes.txt")
 model_path = args["model"] if args["model"] != None else class_path.split(".")[0]+".h5"
 image_path = args["image"]
 output_dir = get_unused_dir_num(pdir="results", pref=None)
@@ -106,13 +63,16 @@ orig = image.copy()
 print("[INFO] loading network...")
 model = load_model(model_path)
 
-model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
-# image_size = 28
-# model_image_size = (image_size, image_size)
-print(model_image_size)
+img_width = model.layers[0].input.shape[2]
+img_height = model.layers[0].input.shape[1]
+try:
+    model_image_size = (int(img_width), int(img_height))
+    image = cv2.resize(image, model_image_size)
+except:
+    pass
+
 
 # pre-process the image for classification
-image = cv2.resize(image, model_image_size)
 image = image.astype("float") / 255.0
 image = img_to_array(image)
 image = np.expand_dims(image, axis=0)

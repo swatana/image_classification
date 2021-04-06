@@ -25,3 +25,11 @@ $python3 test_generator.py -d [DATASET_PATH]
 
 $python3 test_generator.py -d data/vegetables
 ```
+
+## Test network
+### Evaluate a model by applying it to dataset with labels.
+```
+python3 test_network.py -m [MODEL_PATH] -t [TEST_DIR]
+
+python3 test_network.py -m logs/005/vegetables_model.21-0.38.hdf5 -t test_data/001
+```

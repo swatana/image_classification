@@ -7,6 +7,15 @@ import argparse
 class NotFoundError(Exception):
     pass
 
+def get_unused_dir_num(dir_name, pref):
+    test_data_path = os.path.join(os.path.dirname(__file__), dir_name)
+    os.makedirs(test_data_path, exist_ok=True)
+    dir_list = os.listdir(path=test_data_path)
+    for i in range(1000):
+        search_dir_name = pref + "_" + '%03d' % i
+        if search_dir_name not in dir_list:
+            return search_dir_name
+    raise NotFoundError('Error')
 
 def get_unused_test_data_dir_num():
     test_data_path = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -20,7 +29,7 @@ def get_unused_test_data_dir_num():
 
 
 def test_generator(data_path, test_per):
-    output_dir = os.path.join("test_data", get_unused_test_data_dir_num())
+    output_dir = os.path.join("test_data", get_unused_dir_num("test_data",data_path.split('/')[-1]))
     os.makedirs(output_dir, exist_ok=True)
     print(output_dir)
 
@@ -32,6 +41,7 @@ def test_generator(data_path, test_per):
     with open(os.path.join(output_dir, "train_list.txt"), 'w') as f_train:
         with open(os.path.join(output_dir, "test_list.txt"), 'w') as f_test:
             for i, x in enumerate(classes):
+                print(x)
 
                 ext = ["png", "jpg", "gif"]
                 pathes = []
@@ -40,9 +50,10 @@ def test_generator(data_path, test_per):
                 random.shuffle(pathes)
                 test_siz = int(len(pathes) * test_per)
                 for path in pathes[:test_siz]:
-                    f_test.write("%s %d\n" % (os.path.join(data_path, x, path), i))
+                    print(data_path, x, path)
+                    f_test.write("%s %d\n" % (path, i))
                 for path in pathes[test_siz:]:
-                    f_train.write("%s %d\n" % (os.path.join(data_path, x, path), i))
+                    f_train.write("%s %d\n" % (path, i))
 
     with open(os.path.join(output_dir, "classes.txt"), 'w') as f:
         for x in classes:
@@ -56,7 +67,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--data", required=True,
                     help="path to image directory")
-    ap.add_argument("-t", "--test_per", default=0.15, type=float,
+    ap.add_argument("-t", "--test_per", default=0.02, type=float,
                     help="test data percentage")
 
     args = vars(ap.parse_args())
