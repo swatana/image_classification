@@ -21,9 +21,17 @@ python3 test_image.py -m=model_data/vegetables/000/model.h5 -c=model_data/vegeta
 ## Test generator
 ### On terminal
 ```
-$python3 test_generator.py -d [DATASET_PATH]
+python3 test_generator.py -d [DATASET_PATH]
 
-$python3 test_generator.py -d data/vegetables
+python3 test_generator.py -d data/vegetables
+```
+
+## Train network
+### On terminal
+```
+python3 train_network.py -d [DATASET DIR]
+
+python3 train_network.py -t test_data/vegetables_000/train_list.txt -c test_data/vegetables_000/classes.txt -f --image_size 28
 ```
 
 ## Test network

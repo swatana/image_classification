@@ -13,7 +13,7 @@ from single_label_network import SingleLabelNetworkTrainer
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-m", "--model_path",
+    parser.add_argument("-m", "--model_path", default='lenet',
                         help="Path to base model. Default to InceptionV3")
     parser.add_argument("-b", "--batch_size", default=32, type=int,
                         help="Batch size")
@@ -48,19 +48,19 @@ def main():
     init_lr = args.learning_rate
 
     trainer = SingleLabelNetworkTrainer(args.train_file, args.class_file, width, height,
-                                        args.logs_dir)
+                                        args.model_path, args.logs_dir)
     num_classes = trainer.num_classes
     # initialize the model
     print("[INFO] compiling model...")
 
-    if args.model_path == 'inception_v3':
-        from keras.applications.inception_v3 import InceptionV3
-        base_model = InceptionV3(include_top=True, weights='imagenet')
-    elif args.model_path:
-        base_model = load_model(args.model_path)
-    else:
+    if args.model_path == 'lenet':
         from lenet import LeNet
         base_model = LeNet.build(width=width, height=height, depth=3, classes=num_classes)
+    elif args.model_path == 'inception_v3':
+        from keras.applications.inception_v3 import InceptionV3
+        base_model = InceptionV3(include_top=True, weights='imagenet')
+    else:
+        base_model = load_model(args.model_path)
 
     if init_lr is None:
         init_lr = 1e-3 if args.full_training else 1e-5

@@ -193,7 +193,7 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
     return preds
 
 
-def test_network(model_object, test_data_path, model_image_size=(28, 28)):
+def test_network(model_object, test_data_path, model_path, model_image_size=(28, 28)):
     model = model_object
     class_path = os.path.join(test_data_path, "classes.txt")
     with open(class_path) as fp:
@@ -319,6 +319,7 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
     with open(os.path.join(output_dir, "statistics.txt"), 'w') as f:
         f.write("Number_of_classes: %d\nTest_data: %s\n" %
                 (CLASS, test_data_path))
+        f.write("model_path: %s\n" % (model_path))
         f.write("Accuracy: %f (%d/%d)\n" %
                 (accuracy, np.sum([result[i][i] for i in range(CLASS)]), all_sum))
         f.write("mAP: %f\n" % (mAP))
@@ -361,7 +362,7 @@ if __name__ == '__main__':
         # if not (os.path.isfile(os.path.join(test_dir, "classes.txt")) and os.path.isfile(os.path.join(test_dir,
         #                                                                                               "test_list.txt"))):
         #     test_dir = test_generator(test_dir)
-        test_network(model_object=model, test_data_path=test_dir)
+        test_network(model_object=model, test_data_path=test_dir, model_path=model_path)
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
         class_path = os.path.join(os.path.dirname(model_path), "classes.txt")

@@ -18,13 +18,13 @@ from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 
 class SingleLabelNetworkTrainer():
-    def __init__(self, train_file_path, classes_file_path, image_width, image_height, logs_dir=None):
+    def __init__(self, train_file_path, classes_file_path, image_width, image_height, model_path, logs_dir=None):
 
         self.train_file_path = train_file_path
         self.classes_file_path = classes_file_path
 
         if logs_dir is None:
-            logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2]))
+            logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2] + '_' + model_path))
         os.makedirs(logs_dir, exist_ok=True)
         self.logs_dir = logs_dir
 
