@@ -8,6 +8,7 @@ from keras.callbacks import ReduceLROnPlateau
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
+from train_utils import get_unused_dir_num
 from train_utils import get_unused_log_dir_num
 from train_utils import load_images
 from train_utils import make_logging_callbacks
@@ -23,7 +24,7 @@ class SingleLabelNetworkTrainer():
         self.classes_file_path = classes_file_path
 
         if logs_dir is None:
-            logs_dir = os.path.join("logs", get_unused_log_dir_num())
+            logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2]))
         os.makedirs(logs_dir, exist_ok=True)
         self.logs_dir = logs_dir
 
@@ -100,7 +101,7 @@ class SingleLabelNetworkTrainer():
 
                 img_paths.append(img_path)
                 all_labels.append(int(class_ids))
-        print(all_labels)
+
         with open(self.classes_file_path) as classes_fp:
             class_names = [line.strip() for line in classes_fp]
             num_classes = len(class_names)
@@ -112,10 +113,6 @@ class SingleLabelNetworkTrainer():
         data = load_images(img_paths, self.image_width, self.image_height)
         all_labels = np.array(all_labels)
 
-        print(data)
-        print(all_labels)
-        # import sys
-        # sys.exit()
         # partition the data into training and testing splits using 75% of
         # the data for training and the remaining 25% for testing
         trainX, testX, trainY, testY = train_test_split(

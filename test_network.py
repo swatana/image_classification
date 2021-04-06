@@ -24,11 +24,16 @@ from test_generator import test_generator
 from keras.preprocessing.image import img_to_array
 from sklearn import metrics
 
+from utils import get_unused_dir_num
+from test_utils import CvPutJaText
+
+fontPIL = "Dflgs9.ttc"
+font_path = fontPIL
+
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 mpl.rcParams['axes.xmargin'] = 0
 mpl.rcParams['axes.ymargin'] = 0
-
 
 class NotFoundError(Exception):
     pass
@@ -74,6 +79,9 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
             "results", get_unused_result_dir_num("prediction"))
 
     os.makedirs(predict_dir, exist_ok=True)
+    os.makedirs(predict_dir.replace('predictions', 'grad_cam'), exist_ok=True)
+    os.makedirs(predict_dir.replace('predictions', 'grad_cam2'), exist_ok=True)
+    os.makedirs(predict_dir.replace('predictions', 'heatmap'), exist_ok=True)
 
     if image_path_list is None:
         image_path_list = list(paths.list_images(image_path)) if os.path.isdir(
@@ -132,15 +140,16 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
 
         img_basename, img_ext = os.path.splitext(os.path.basename(path))
         extra_output_imgs = [
-            (jetcam, "_grad_cam"),
-            (jetcam2, "_grad_cam2"),
-            (heatmap, "_heatmap"),
+            (jetcam, "grad_cam"),
+            (jetcam2, "grad_cam2"),
+            (heatmap, "heatmap"),
         ]
         for extra_output_img, file_suffix in extra_output_imgs:
+            save_dir = predict_dir.replace('predictions', file_suffix)
             array_to_img(extra_output_img).resize(
                 output_image.shape[1::-1]).save(
-                    os.path.join(predict_dir,
-                                 img_basename + file_suffix + img_ext))
+                    os.path.join(save_dir,
+                                 img_basename + img_ext))
         class_id = image_class if image_class is not None else predicted_id
 
         ###
@@ -153,8 +162,7 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
 
         # draw the label on the image
         for i, img_label in enumerate(img_labels):
-            cv2.putText(output_image, img_label, (10, 25 * (i + 1)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.7, (0, 255, 0), 2)
+            output_image = CvPutJaText.puttext(output_image, img_label, (10, 25 * (i+1)), font_path, 20, (0, 255, 0))
 
 
         output_path = os.path.join(predict_dir, os.path.basename(path))
@@ -192,10 +200,10 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
         class_names = [line.strip() for line in fp]
     CLASS = len(class_names)
 
-    output_dir = os.path.join("results", get_unused_result_dir_num("test"))
-    predict_dir = os.path.join(output_dir, "predictions")
+    output_dir = os.path.join("results", get_unused_dir_num("results", test_data_path.split('/')[-2]))
     os.makedirs(output_dir, exist_ok=True)
-    test_path = os.path.join(test_data_path, "test.txt")
+    predict_dir = os.path.join(output_dir, "predictions")
+    test_path = os.path.join(test_data_path, "test_list.txt")
     contents = _read_image_path_and_label_from_test_file(test_path)
     # result[l1][l2] : the number of images witch is predicted as l1, the true label is l2
     result = np.zeros((CLASS, CLASS), dtype=int)
@@ -217,13 +225,14 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
     for i, (pred, lab) in enumerate(zip(predicts, labels)):
         pred_labs.append(pred.argmax())
         result[pred_labs[i]][lab] += 1
-
+    print(result)
     all_sum = len(predicts)
     # col_sum[l] : count of whose true label is l
     col_sum = np.sum(result, axis=0)
     # row_sum[l] : count of whose predicted label is l
     row_sum = np.sum(result, axis=1)
-
+    all_score = []
+    all_true = []
     for i in range(CLASS):
         recall = float(result[i][i]) / col_sum[i] if col_sum[i] != 0 else -1
         precision = float(result[i][i]) / row_sum[i] if row_sum[i] != 0 else -1
@@ -236,6 +245,9 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
 
         y_score = predicts[:, i]
         y_true = [j == i for j in labels]
+        all_score.extend(y_score)
+        all_true.extend(y_true)
+        print(y_true, y_score)
 
         fpr, tpr, thresholds = metrics.roc_curve(y_true, y_score)
 
@@ -295,7 +307,10 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
             stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
 
     accuracy = float(np.sum([result[i][i] for i in range(CLASS)])) / all_sum
+    mAP = metrics.average_precision_score(
+            all_true, all_score, average='samples')
     print("\nAccuracy: %f" % accuracy)
+    print("\nmAP: %f" % mAP)
 
     with open(os.path.join(output_dir, "prediction_and_label.txt"), 'w') as f:
         for image_path, pred_lab, label in zip(image_path_list, pred_labs, labels):
@@ -306,6 +321,7 @@ def test_network(model_object, test_data_path, model_image_size=(28, 28)):
                 (CLASS, test_data_path))
         f.write("Accuracy: %f (%d/%d)\n" %
                 (accuracy, np.sum([result[i][i] for i in range(CLASS)]), all_sum))
+        f.write("mAP: %f\n" % (mAP))
         f.write(
             "Class Accuracy Specificity Recall Precision F-value AUC_ROC AUC_PR Cutoff-value\n")
         for stat in stats:
@@ -342,9 +358,9 @@ if __name__ == '__main__':
 
     if args["test"] is not None:
         test_dir = args["test"]
-        if not (os.path.isfile(os.path.join(test_dir, "classes.txt")) and os.path.isfile(os.path.join(test_dir,
-                                                                                                      "test.txt"))):
-            test_dir = test_generator(test_dir)
+        # if not (os.path.isfile(os.path.join(test_dir, "classes.txt")) and os.path.isfile(os.path.join(test_dir,
+        #                                                                                               "test_list.txt"))):
+        #     test_dir = test_generator(test_dir)
         test_network(model_object=model, test_data_path=test_dir)
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]

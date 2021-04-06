@@ -3,6 +3,8 @@ import argparse
 from keras.models import load_model
 
 from single_label_network import SingleLabelNetworkTrainer
+# import os
+# os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -15,7 +17,7 @@ def main():
                         help="Path to base model. Default to InceptionV3")
     parser.add_argument("-b", "--batch_size", default=32, type=int,
                         help="Batch size")
-    parser.add_argument("-e", "--epochs", default=10, type=int,
+    parser.add_argument("-e", "--epochs", default=100, type=int,
                         help="Number of epochs")
     parser.add_argument("-r", "--learning_rate", type=float,
                         help="Learning rate")
