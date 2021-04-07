@@ -27,6 +27,8 @@ from sklearn import metrics
 from utils import get_unused_dir_num
 from test_utils import CvPutJaText
 
+import json
+
 fontPIL = "Dflgs9.ttc"
 font_path = fontPIL
 
@@ -195,13 +197,17 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
 
 def test_network(model_object, test_data_path, model_path, model_image_size):
     model = model_object
+    model_dir = os.path.dirname(model_path)
     test_data_dir = os.path.dirname(test_data_path)
-    class_path = os.path.join(test_data_dir, "classes.txt")
+    with open(os.path.join(model_dir, "config.json")) as f:
+        config = json.load(f)
+    class_path = os.path.join(model_dir, "classes.txt")
     with open(class_path) as fp:
         class_names = [line.strip() for line in fp]
     CLASS = len(class_names)
 
-    output_dir = os.path.join("results", get_unused_dir_num("results", test_data_path.split('/')[-2]))
+    output_dir = os.path.join("results", get_unused_dir_num("results",
+                    test_data_path.split('/')[-2] + '_' + config['base_model']))
     os.makedirs(output_dir, exist_ok=True)
     predict_dir = os.path.join(output_dir, "predictions")
     test_path = test_data_path

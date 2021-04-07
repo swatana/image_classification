@@ -17,6 +17,8 @@ from train_utils import modify_base_model
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 
+import json
+
 class SingleLabelNetworkTrainer():
     def __init__(self, train_file_path, classes_file_path, image_width, image_height, model_path, logs_dir=None):
 
@@ -36,6 +38,13 @@ class SingleLabelNetworkTrainer():
         self.num_classes = len(class_names)
         self.image_width = image_width
         self.image_height = image_height
+        config_path = os.path.join(logs_dir, "config.json");
+        with open(config_path, "w") as f:
+            config = {}
+            config['base_model'] = model_path
+            config['image_width'] = image_width
+            config['image_height'] = image_height
+            json.dump(config, f)
 
     def train(self, init_lr, batch_size, num_epochs, is_fine_tuning,
               is_resuming):
