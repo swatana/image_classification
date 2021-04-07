@@ -59,6 +59,9 @@ def main():
     elif args.model_path == 'inception_v3':
         from keras.applications.inception_v3 import InceptionV3
         base_model = InceptionV3(include_top=True, weights='imagenet')
+    elif args.model_path == 'mobilenet':
+        from keras.applications.mobilenet import MobileNet
+        base_model = MobileNet(include_top=True, weights='imagenet')
     else:
         base_model = load_model(args.model_path)
 

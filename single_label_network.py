@@ -75,7 +75,7 @@ class SingleLabelNetworkTrainer():
         reduce_lr = ReduceLROnPlateau(
             monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
         early_stopping = EarlyStopping(
-            monitor='val_loss', patience=10, verbose=1)
+            monitor='val_loss', patience=100, verbose=1)
         return [
             reduce_lr, early_stopping, *make_logging_callbacks(self.logs_dir)
         ]

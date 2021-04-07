@@ -195,7 +195,8 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
 
 def test_network(model_object, test_data_path, model_path, model_image_size):
     model = model_object
-    class_path = os.path.join(test_data_path, "classes.txt")
+    test_data_dir = os.path.dirname(test_data_path)
+    class_path = os.path.join(test_data_dir, "classes.txt")
     with open(class_path) as fp:
         class_names = [line.strip() for line in fp]
     CLASS = len(class_names)
@@ -203,7 +204,7 @@ def test_network(model_object, test_data_path, model_path, model_image_size):
     output_dir = os.path.join("results", get_unused_dir_num("results", test_data_path.split('/')[-2]))
     os.makedirs(output_dir, exist_ok=True)
     predict_dir = os.path.join(output_dir, "predictions")
-    test_path = os.path.join(test_data_path, "test_list.txt")
+    test_path = test_data_path
     contents = _read_image_path_and_label_from_test_file(test_path)
     # result[l1][l2] : the number of images witch is predicted as l1, the true label is l2
     result = np.zeros((CLASS, CLASS), dtype=int)
@@ -341,7 +342,7 @@ if __name__ == '__main__':
 
     ap.add_argument("-m", "--model", required=True,
                     help="path to trained model")
-    group.add_argument("-t", "--test",
+    group.add_argument("-t", "--test_data_path",
                        help="path to test dir or dataset to generate test dir")
     group.add_argument("-i", "--image",
                        help="path to input image")
@@ -360,12 +361,12 @@ if __name__ == '__main__':
     print("[INFO] loading network...")
     model = load_model(model_path)
 
-    if args["test"] is not None:
-        test_dir = args["test"]
+    if args["test_data_path"] is not None:
+        test_data_path = args["test_data_path"]
         # if not (os.path.isfile(os.path.join(test_dir, "classes.txt")) and os.path.isfile(os.path.join(test_dir,
         #                                                                                               "test_list.txt"))):
         #     test_dir = test_generator(test_dir)
-        test_network(model_object=model, test_data_path=test_dir, model_path=model_path, model_image_size=(image_size, image_size))
+        test_network(model_object=model, test_data_path=test_data_path, model_path=model_path, model_image_size=(image_size, image_size))
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
         class_path = os.path.join(os.path.dirname(model_path), "classes.txt")
