@@ -10,6 +10,8 @@ pip3 install -r requirements.txt
 ### Train model
 ```
 python3 train_image.py -d=data/vegetables/
+python3 train_image.py -d=data/vegetables/ -t 0.1
+python3 train_image.py -d=data/vegetables/ -n 10
 ```
 
 ### Process model on console
