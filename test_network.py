@@ -336,6 +336,8 @@ def test_network(model_object, test_data_path, model_path, model_image_size):
             f.write("%s %f %f %f %f %f %f %f %f\n" % (
                 stat[0], stat[1], stat[2], stat[3], stat[4], stat[5], stat[6], stat[7], stat[8]))
 
+        f.write("result:\n %s\n" % (np.array2string(result)))
+
     print("Saved predictions, statistics and ROC Curve figures in {}/".format(output_dir))
 
     return (stats, accuracy)
