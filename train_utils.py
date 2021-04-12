@@ -54,6 +54,8 @@ def make_logging_callbacks(logs_dir):
     )
     csv_logger = CSVLogger(os.path.join(logs_dir, 'training.log'))
     tensor_board = TensorBoard(log_dir=os.path.join(logs_dir, "logs"))
+
+    print("[INFO] serialized model name: " + logs_dir + 'model.{epoch:02d}-{val_loss:.2f}.hdf5')
     return [checkpointer, csv_logger, tensor_board]
 
 
