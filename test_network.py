@@ -230,7 +230,9 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
     predicts = np.array(predicts)
     img_labs = []
     true_labs = []
+    cnt_labels = np.zeros((CLASS), dtype=int)
     for i, (pred, lab, image_path) in enumerate(zip(predicts, labels, image_path_list)):
+        cnt_labels[lab] += 1
         if thre_score == None:
             argmax = pred.argmax()
             pred_labs.append(argmax)
@@ -253,7 +255,7 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
     all_score = []
     all_true = []
     for i in range(CLASS):
-        recall = float(result[i][i]) / col_sum[i] if col_sum[i] != 0 else -1
+        recall = float(result[i][i]) / cnt_labels[i] if col_sum[i] != 0 else -1
         precision = float(result[i][i]) / row_sum[i] if row_sum[i] != 0 else -1
         specificity = float(
             all_sum + result[i][i] - col_sum[i] - row_sum[i]) / (all_sum - col_sum[i])
@@ -261,7 +263,6 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
             (recall + precision) if recall != -1 and precision != -1 else -1
         accuracy = (all_sum + 2 * result[i][i] - row_sum[i] -
                     col_sum[i]) / all_sum if all_sum != 0 else -1
-
         y_score = predicts[:, i]
         y_true = [j == i for j in labels]
         all_score.extend(y_score)
