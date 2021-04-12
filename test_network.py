@@ -195,7 +195,7 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
     return preds
 
 
-def test_network(model_object, test_data_path, model_path, model_image_size):
+def test_network(model_object, test_data_path, model_path, model_image_size, thre_score):
     model = model_object
     model_dir = os.path.dirname(model_path)
     test_data_dir = os.path.dirname(test_data_path)
@@ -228,10 +228,22 @@ def test_network(model_object, test_data_path, model_path, model_image_size):
     predicts = predict_images(model=model, image_path_list=image_path_list,
                               class_names=class_names, predict_dir=predict_dir, model_image_size=model_image_size)
     predicts = np.array(predicts)
-
-    for i, (pred, lab) in enumerate(zip(predicts, labels)):
-        pred_labs.append(pred.argmax())
-        result[pred_labs[i]][lab] += 1
+    img_labs = []
+    true_labs = []
+    for i, (pred, lab, image_path) in enumerate(zip(predicts, labels, image_path_list)):
+        if thre_score == None:
+            argmax = pred.argmax()
+            pred_labs.append(argmax)
+            true_labs.append(lab)
+            img_labs.append(image_path)
+            result[argmax][lab] += 1
+        else:
+            for j, p in enumerate(pred):
+                if p > thre_score:
+                    pred_labs.append(p)
+                    true_labs.append(lab)
+                    img_labs.append(image_path)
+                    result[j][lab] += 1
     print(result)
     all_sum = len(predicts)
     # col_sum[l] : count of whose true label is l
@@ -320,7 +332,7 @@ def test_network(model_object, test_data_path, model_path, model_image_size):
     print("\nmAP: %f" % mAP)
 
     with open(os.path.join(output_dir, "prediction_and_label.txt"), 'w') as f:
-        for image_path, pred_lab, label in zip(image_path_list, pred_labs, labels):
+        for image_path, pred_lab, label in zip(img_labs, pred_labs, true_labs):
             f.write("%s %d %d\n" % (image_path, pred_lab, label))
 
     with open(os.path.join(output_dir, "statistics.txt"), 'w') as f:
@@ -360,6 +372,8 @@ if __name__ == '__main__':
                     help="default class id of the images")
     ap.add_argument("-s", "--image_size", default=28, type=int,
                     help="model image size")
+    ap.add_argument("-th", "--thre_score", default=None, type=float,
+                    help="thre_score")
     args = vars(ap.parse_args())
 
     model_path = args["model"]
@@ -374,7 +388,8 @@ if __name__ == '__main__':
         # if not (os.path.isfile(os.path.join(test_dir, "classes.txt")) and os.path.isfile(os.path.join(test_dir,
         #                                                                                               "test_list.txt"))):
         #     test_dir = test_generator(test_dir)
-        test_network(model_object=model, test_data_path=test_data_path, model_path=model_path, model_image_size=(image_size, image_size))
+        test_network(model_object=model, test_data_path=test_data_path, model_path=model_path,
+        model_image_size=(image_size, image_size), thre_score=args["thre_score"])
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
         class_path = os.path.join(os.path.dirname(model_path), "classes.txt")
