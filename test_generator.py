@@ -28,7 +28,7 @@ def get_unused_test_data_dir_num():
     raise NotFoundError('Error')
 
 
-def test_generator(data_path, test_per):
+def test_generator(data_path, test_per, test_num):
     output_dir = os.path.join("test_data", get_unused_dir_num("test_data",data_path.split('/')[-1]))
     os.makedirs(output_dir, exist_ok=True)
     print(output_dir)
@@ -41,16 +41,18 @@ def test_generator(data_path, test_per):
     with open(os.path.join(output_dir, "train_list.txt"), 'w') as f_train:
         with open(os.path.join(output_dir, "test_list.txt"), 'w') as f_test:
             for i, x in enumerate(classes):
-                print(x)
 
                 ext = ["png", "jpg", "gif"]
                 pathes = []
                 for e in ext:
                     pathes.extend(glob.glob(os.path.join(data_path, x, "*." + e)))
                 random.shuffle(pathes)
-                test_siz = int(len(pathes) * test_per)
+
+                test_siz = min(int(len(pathes) * test_per) if args["test_num"] is None else args["test_num"], len(pathes))
+
+                print("class:{:>15} | train:{:>10} | test:{:>10}".format(x, len(pathes) - test_siz, test_siz))
+
                 for path in pathes[:test_siz]:
-                    print(data_path, x, path)
                     f_test.write("%s %d\n" % (path, i))
                 for path in pathes[test_siz:]:
                     f_train.write("%s %d\n" % (path, i))
@@ -67,8 +69,16 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--data", required=True,
                     help="path to image directory")
-    ap.add_argument("-t", "--test_per", default=0.02, type=float,
-                    help="test data percentage")
+    ap.add_argument("-t", "--test_per", default=None, type=float,
+                    help="percentage of test data")
+    ap.add_argument("-n", "--test_num", default=None, type=int,
+                    help="number of test data in each classes")
 
     args = vars(ap.parse_args())
-    test_generator(args["data"], args["test_per"])
+
+    assert args["test_per"] is None or args["test_num"] is None, "You cannot set both test_per and test_num"
+
+    if args["test_num"] is None and args["test_per"] is None:
+        args["test_per"] = 0.02
+
+    test_generator(args["data"], args["test_per"], args["test_num"])
