@@ -230,9 +230,8 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
     predicts = np.array(predicts)
     img_labs = []
     true_labs = []
-    cnt_labels = np.zeros((CLASS), dtype=int)
+    u, cnt_labels = np.unique(labels, return_counts=True)
     for i, (pred, lab, image_path) in enumerate(zip(predicts, labels, image_path_list)):
-        cnt_labels[lab] += 1
         if thre_score == None:
             argmax = pred.argmax()
             pred_labs.append(argmax)
