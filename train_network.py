@@ -68,12 +68,12 @@ def main():
 
     if model_path == 'lenet':
         from lenet import LeNet
-        base_model = LeNet.build(height=image_height, width=image_width, depth=3, classes=num_classes)c
+        base_model = LeNet.build(height=image_height, width=image_width, depth=3, classes=num_classes)
     elif model_path == 'inception_v3':
         from tensorflow.keras.applications.inception_v3 import InceptionV3
         base_model = InceptionV3(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     elif model_path == 'EfficientNetB7':
-        from tensorflow.keras.applications.EfficientNetB7 import EfficientNetB7
+        from tensorflow.keras.applications.efficientnet import EfficientNetB7
         base_model = EfficientNetB7(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     elif model_path == 'mobilenet':
         from tensorflow.keras.applications.mobilenet import MobileNet
