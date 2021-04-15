@@ -12,9 +12,9 @@ class LeNet:
 	def build(width, height, depth, classes):
 
 
-class LeNet(Sequential):
-    def __init__(self, input_shape, nb_classes):
-        super().__init__()
+# class LeNet(Sequential):
+#     def __init__(self, input_shape, nb_classes):
+#         super().__init__()
 
         # self.add(Conv2D(6, kernel_size=(5, 5), strides=(1, 1), activation='tanh', input_shape=input_shape, padding="same"))
         # self.add(AveragePooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'))
