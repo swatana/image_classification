@@ -5,6 +5,8 @@ from tensorflow.keras.models import load_model
 
 from single_label_network import SingleLabelNetworkTrainer
 from train_utils import get_unused_dir_num
+from tensorflow.keras.layers import Input
+
 # import os
 # os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 
@@ -69,7 +71,7 @@ def main():
         base_model = LeNet.build(width=image_width, height=image_height, depth=3, classes=num_classes)
     elif model_path == 'inception_v3':
         from tensorflow.keras.applications.inception_v3 import InceptionV3
-        base_model = InceptionV3(include_top=True, weights='imagenet')
+        base_model = InceptionV3(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     elif model_path == 'mobilenet':
         from tensorflow.keras.applications.mobilenet import MobileNet
         base_model = MobileNet(include_top=True, weights='imagenet')
