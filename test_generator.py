@@ -46,7 +46,8 @@ def test_generator(data_path, test_per, test_num):
                 pathes = []
                 for e in ext:
                     pathes.extend(glob.glob(os.path.join(data_path, x, "*." + e)))
-                random.shuffle(pathes)
+                pathes.sort()
+                # random.shuffle(pathes)
 
                 test_siz = min(int(len(pathes) * test_per) if args["test_num"] is None else args["test_num"], len(pathes))
 
@@ -79,6 +80,6 @@ if __name__ == '__main__':
     assert args["test_per"] is None or args["test_num"] is None, "You cannot set both test_per and test_num"
 
     if args["test_num"] is None and args["test_per"] is None:
-        args["test_per"] = 0.02
+        args["test_per"] = 0
 
     test_generator(args["data"], args["test_per"], args["test_num"])

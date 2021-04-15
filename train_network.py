@@ -6,7 +6,7 @@ from keras.models import load_model
 from single_label_network import SingleLabelNetworkTrainer
 from train_utils import get_unused_dir_num
 # import os
-# os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
+os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -31,13 +31,11 @@ def main():
                         help="Path to output logs")
     parser.add_argument("-t", "--train_file", type=str,
                         help="Path to train file")
-    parser.add_argument("-c", "--class_file", type=str,
-                        help="Path to class names file")
     parser.add_argument("-s", "--image_size", type=int, default=None,
                         help="image width")
-    parser.add_argument("--image_width", type=int, default=299,
+    parser.add_argument("-iw", "--image_width", type=int, default=299,
                         help="image width")
-    parser.add_argument("--image_height", type=int, default=299,
+    parser.add_argument("-ih", "--image_height", type=int, default=299,
                         help="image height")
 
     args = parser.parse_args()
@@ -51,13 +49,14 @@ def main():
     train_file_path = args.train_file
     model_path = args.model_path
     logs_dir = args.logs_dir
+    class_file_path = os.path.join(os.path.dirname(train_file_path), "classes.txt")
 
 
     if logs_dir is None:
         logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2] + '_' + model_path))
     os.makedirs(logs_dir, exist_ok=True)
 
-    trainer = SingleLabelNetworkTrainer(train_file_path, args.class_file, image_width, image_height,
+    trainer = SingleLabelNetworkTrainer(train_file_path, class_file_path, image_width, image_height,
                                         model_path, logs_dir)
     num_classes = trainer.num_classes
     # initialize the model
