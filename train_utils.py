@@ -51,6 +51,7 @@ def make_logging_callbacks(logs_dir):
                               'model.{epoch:02d}-{val_loss:.2f}.hdf5'),
         verbose=1,
         save_best_only=True,
+        period=10,
     )
     csv_logger = CSVLogger(os.path.join(logs_dir, 'training.log'))
     tensor_board = TensorBoard(log_dir=os.path.join(logs_dir, "logs"))
