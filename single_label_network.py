@@ -3,9 +3,9 @@ import random
 
 import numpy as np
 from imutils import paths
-from keras.callbacks import EarlyStopping
-from keras.callbacks import ReduceLROnPlateau
-from keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
 from train_utils import get_unused_dir_num

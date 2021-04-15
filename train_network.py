@@ -1,12 +1,12 @@
 import argparse
 import os
 
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 from single_label_network import SingleLabelNetworkTrainer
 from train_utils import get_unused_dir_num
 # import os
-os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
+# os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
 
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -49,6 +49,8 @@ def main():
     train_file_path = args.train_file
     model_path = args.model_path
     logs_dir = args.logs_dir
+    full_training = args.full_training
+    resume = args.resume
     class_file_path = os.path.join(os.path.dirname(train_file_path), "classes.txt")
 
 
@@ -62,25 +64,25 @@ def main():
     # initialize the model
     print("[INFO] compiling model...")
 
-    if args.model_path == 'lenet':
+    if model_path == 'lenet':
         from lenet import LeNet
         base_model = LeNet.build(width=image_width, height=image_height, depth=3, classes=num_classes)
-    elif args.model_path == 'inception_v3':
-        from keras.applications.inception_v3 import InceptionV3
+    elif model_path == 'inception_v3':
+        from tensorflow.keras.applications.inception_v3 import InceptionV3
         base_model = InceptionV3(include_top=True, weights='imagenet')
-    elif args.model_path == 'mobilenet':
-        from keras.applications.mobilenet import MobileNet
+    elif model_path == 'mobilenet':
+        from tensorflow.keras.applications.mobilenet import MobileNet
         base_model = MobileNet(include_top=True, weights='imagenet')
     else:
-        base_model = load_model(args.model_path)
+        base_model = load_model(model_path)
 
     if init_lr is None:
-        init_lr = 1e-3 if args.full_training else 1e-5
+        init_lr = 1e-3 if full_training else 1e-5
     base_model.summary()
     trainer.base_model = base_model
 
-    trainer.train(init_lr, batch_size, num_epochs, not args.full_training,
-                  args.resume)
+    trainer.train(init_lr, batch_size, num_epochs, not full_training,
+                  resume)
 
 
 if __name__ == '__main__':
