@@ -9,7 +9,7 @@ from keras import backend as K
 
 class LeNet:
 	@staticmethod
-	def build(width, height, depth, classes, classifier_activation):
+	def build(width, height, depth, classes):
 
 
 # class LeNet(Sequential):
@@ -55,7 +55,7 @@ class LeNet:
 
 		# softmax classifier
 		model.add(Dense(classes))
-		model.add(Activation(classifier_activation))
+		model.add(Activation("softmax"))
 
 		# return the constructed network architecture
 		return model

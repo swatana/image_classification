@@ -34,6 +34,13 @@ class SingleLabelNetworkTrainer():
         self.num_classes = len(class_names)
         self.image_width = image_width
         self.image_height = image_height
+        config_path = os.path.join(logs_dir, "config.json");
+        with open(config_path, "w") as f:
+            config = {}
+            config['base_model'] = model_path
+            config['image_width'] = image_width
+            config['image_height'] = image_height
+            json.dump(config, f)
 
     def train(self, init_lr, batch_size, num_epochs, is_fine_tuning,
               is_resuming):

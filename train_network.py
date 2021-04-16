@@ -6,7 +6,6 @@ from tensorflow.keras.models import load_model
 from single_label_network import SingleLabelNetworkTrainer
 from train_utils import get_unused_dir_num
 from tensorflow.keras.layers import Input
-import json
 
 # import os
 # os.environ["KERAS_BACKEND"] = "plaidml.keras.backend"
@@ -40,8 +39,6 @@ def main():
                         help="image width")
     parser.add_argument("-ih", "--image_height", type=int, default=299,
                         help="image height")
-    parser.add_argument("-ca", "--classifier_activation", type=str, default='softmax',
-                        help="activation")
 
     args = parser.parse_args()
 
@@ -56,22 +53,12 @@ def main():
     logs_dir = args.logs_dir
     full_training = args.full_training
     resume = args.resume
-    classifier_activation = args.classifier_activation
     class_file_path = os.path.join(os.path.dirname(train_file_path), "classes.txt")
 
 
     if logs_dir is None:
         logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2] + '_' + model_path))
     os.makedirs(logs_dir, exist_ok=True)
-
-    config_path = os.path.join(logs_dir, "config.json");
-    with open(config_path, "w") as f:
-        config = {}
-        config['base_model'] = model_path
-        config['image_width'] = image_width
-        config['image_height'] = image_height
-        config['classifier_activation'] = classifier_activation
-        json.dump(config, f)
 
     trainer = SingleLabelNetworkTrainer(train_file_path, class_file_path, image_width, image_height,
                                         model_path, logs_dir)
@@ -81,13 +68,10 @@ def main():
 
     if model_path == 'lenet':
         from lenet import LeNet
-        base_model = LeNet.build(height=image_height, width=image_width, depth=3, classes=num_classes, classifier_activation=classifier_activation)
+        base_model = LeNet.build(width=image_width, height=image_height, depth=3, classes=num_classes)
     elif model_path == 'inception_v3':
         from tensorflow.keras.applications.inception_v3 import InceptionV3
         base_model = InceptionV3(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
-    elif model_path == 'EfficientNetB7':
-        from tensorflow.keras.applications.efficientnet import EfficientNetB7
-        base_model = EfficientNetB7(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     elif model_path == 'mobilenet':
         from tensorflow.keras.applications.mobilenet import MobileNet
         base_model = MobileNet(include_top=True, weights='imagenet')

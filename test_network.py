@@ -29,9 +29,6 @@ from test_utils import CvPutJaText
 
 import json
 
-import tensorflow as tf
-tf.compat.v1.disable_eager_execution()
-
 fontPIL = "Dflgs9.ttc"
 font_path = fontPIL
 
@@ -77,7 +74,7 @@ def create_polygon_json_from_mask(gray, filename, class_id=None):
     return line
 
 def predict_images(model, class_names, image_path_list=None, image_path=None, imshow=False, predict_dir=None,
-                   model_image_size=(0, 0), image_class=None):
+                   model_image_size=(28, 28), image_class=None):
     FLAG = predict_dir is None
     if FLAG:
         predict_dir = os.path.join(
@@ -373,21 +370,14 @@ if __name__ == '__main__':
                        help="path to input image directory")
     ap.add_argument("-c", "--image_class", default=None, type=int,
                     help="default class id of the images")
-    ap.add_argument("-s", "--image_size", default=None, type=int,
+    ap.add_argument("-s", "--image_size", default=28, type=int,
                     help="model image size")
     ap.add_argument("-th", "--thre_score", default=None, type=float,
                     help="thre_score")
-    ap.add_argument("-iw", "--image_width", type=int, default=299,
-                        help="image width")
-    ap.add_argument("-ih", "--image_height", type=int, default=299,
-                        help="image height")
-
     args = vars(ap.parse_args())
 
     model_path = args["model"]
     image_size = args["image_size"]
-    image_width = args["image_width"] if image_size is None else image_size
-    image_height = args["image_height"] if image_size is None else image_size
 
     # load the trained convolutional neural network
     print("[INFO] loading network...")
@@ -399,7 +389,7 @@ if __name__ == '__main__':
         #                                                                                               "test_list.txt"))):
         #     test_dir = test_generator(test_dir)
         test_network(model_object=model, test_data_path=test_data_path, model_path=model_path,
-        model_image_size=(image_width, image_height), thre_score=args["thre_score"])
+        model_image_size=(image_size, image_size), thre_score=args["thre_score"])
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
         class_path = os.path.join(os.path.dirname(model_path), "classes.txt")
