@@ -33,6 +33,8 @@ def main():
                         help="Path to output logs")
     parser.add_argument("-t", "--train_file", type=str,
                         help="Path to train file")
+    parser.add_argument("-v", "--val_file", type=str, default=None,
+                        help="Path to train file")
     parser.add_argument("-s", "--image_size", type=int, default=None,
                         help="image width")
     parser.add_argument("-iw", "--image_width", type=int, default=299,
@@ -49,18 +51,18 @@ def main():
     num_epochs = args.epochs
     init_lr = args.learning_rate
     train_file_path = args.train_file
+    val_file_path = args.val_file
     model_path = args.model_path
     logs_dir = args.logs_dir
     full_training = args.full_training
     resume = args.resume
     class_file_path = os.path.join(os.path.dirname(train_file_path), "classes.txt")
 
-
     if logs_dir is None:
         logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2] + '_' + model_path))
     os.makedirs(logs_dir, exist_ok=True)
 
-    trainer = SingleLabelNetworkTrainer(train_file_path, class_file_path, image_width, image_height,
+    trainer = SingleLabelNetworkTrainer(train_file_path, val_file_path, class_file_path, image_width, image_height,
                                         model_path, logs_dir)
     num_classes = trainer.num_classes
     # initialize the model

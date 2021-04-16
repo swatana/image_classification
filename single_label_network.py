@@ -20,9 +20,10 @@ from keras.preprocessing.image import ImageDataGenerator
 import json
 
 class SingleLabelNetworkTrainer():
-    def __init__(self, train_file_path, classes_file_path, image_width, image_height, model_path, logs_dir=None):
+    def __init__(self, train_file_path, val_file_path, classes_file_path, image_width, image_height, model_path, logs_dir=None):
 
         self.train_file_path = train_file_path
+        self.val_file_path = val_file_path
         self.classes_file_path = classes_file_path
         self.logs_dir = logs_dir
 
@@ -44,7 +45,10 @@ class SingleLabelNetworkTrainer():
 
     def train(self, init_lr, batch_size, num_epochs, is_fine_tuning,
               is_resuming):
-        x_train, x_test, y_train, y_test, class_names = self.load_dataset()
+        if self.val_file_path is None:
+            x_train, x_test, y_train, y_test, class_names = self.load_dataset()
+        else:
+            x_train, x_test, y_train, y_test, class_names = self.load_train_val()
         num_classes = len(class_names)
 
         # construct the image generator for data augmentation
@@ -121,7 +125,53 @@ class SingleLabelNetworkTrainer():
         # partition the data into training and testing splits using 75% of
         # the data for training and the remaining 25% for testing
         trainX, testX, trainY, testY = train_test_split(
-            data, all_labels, test_size=0.25, random_state=42)
+            data, all_labels, test_size=0.25, shuffle=False, random_state=42)
+        print(trainY)
+        print(testY)
+
+        # convert the labels from integers to vectors
+        trainY = to_categorical(trainY, num_classes=num_classes)
+        testY = to_categorical(testY, num_classes=num_classes)
+
+        return trainX, testX, trainY, testY, class_names
+
+
+    def load_train_val(self):
+        print("[INFO] loading images...")
+        train_paths = []
+        train_labels = []
+        val_paths = []
+        val_labels = []
+
+        with open(self.train_file_path) as train_fp:
+            for line in train_fp:
+                img_path, class_ids = line.split()
+                train_paths.append(img_path)
+                train_labels.append(int(class_ids))
+
+        with open(self.train_file_path) as train_fp:
+            for line in train_fp:
+                img_path, class_ids = line.split()
+                val_paths.append(img_path)
+                val_labels.append(int(class_ids))
+
+        with open(self.classes_file_path) as classes_fp:
+            class_names = [line.strip() for line in classes_fp]
+            num_classes = len(class_names)
+
+        with open(os.path.join(self.logs_dir, "classes.txt"), 'w') as f:
+            for item in class_names:
+                f.write("%s\n" % item)
+
+        trainX = load_images(train_paths, self.image_width, self.image_height)
+        trainY = np.array(train_labels)
+        testX = load_images(val_paths, self.image_width, self.image_height)
+        testY = np.array(val_labels)
+
+        print(trainX)
+        print(testX)
+        print(trainY)
+        print(testY)
 
         # convert the labels from integers to vectors
         trainY = to_categorical(trainY, num_classes=num_classes)
