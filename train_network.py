@@ -86,6 +86,12 @@ def main():
             base_model = EfficientNetB7(include_top=True, weights='imagenet')
         else:
             base_model = EfficientNetB7(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
+    elif model_path == 'NasNetLarge':
+        from tensorflow.keras.applications.nasnet import NasNetLarge     
+        if image_height == image_width:  
+            base_model = NasNetLarge(include_top=True, weights='imagenet')
+        else:
+            base_model = NasNetLarge(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     else:
         base_model = load_model(model_path)
 
