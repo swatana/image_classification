@@ -168,10 +168,10 @@ class SingleLabelNetworkTrainer():
         testX = load_images(val_paths, self.image_width, self.image_height)
         testY = np.array(val_labels)
 
-        print(trainX)
-        print(testX)
-        print(trainY)
-        print(testY)
+        # print(trainX)
+        # print(testX)
+        # print(trainY)
+        # print(testY)
 
         # convert the labels from integers to vectors
         trainY = to_categorical(trainY, num_classes=num_classes)
