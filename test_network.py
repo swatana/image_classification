@@ -77,7 +77,7 @@ def create_polygon_json_from_mask(gray, filename, class_id=None):
     return line
 
 def predict_images(model, class_names, image_path_list=None, image_path=None, imshow=False, predict_dir=None,
-                   model_image_size=(28, 28), image_class=None, binary=False):
+                   model_image_size=(28, 28), image_class=None):
     FLAG = predict_dir is None
     if FLAG:
         predict_dir = os.path.join(
