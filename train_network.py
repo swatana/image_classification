@@ -41,6 +41,8 @@ def main():
                         help="image width")
     parser.add_argument("-ih", "--image_height", type=int, default=299,
                         help="image height")
+    parser.add_argument("--binary", action='store_true',
+                        help="flag for binary classification")
 
     args = parser.parse_args()
 
@@ -101,7 +103,7 @@ def main():
     trainer.base_model = base_model
 
     trainer.train(init_lr, batch_size, num_epochs, full_training,
-                  resume)
+                  resume, args.binary)
 
 
 if __name__ == '__main__':

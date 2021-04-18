@@ -44,11 +44,16 @@ class SingleLabelNetworkTrainer():
             json.dump(config, f)
 
     def train(self, init_lr, batch_size, num_epochs, full_training,
-              is_resuming):
+              is_resuming, binary_classification):
         if self.val_file_path is None:
             x_train, x_test, y_train, y_test, class_names = self.load_dataset()
         else:
             x_train, x_test, y_train, y_test, class_names = self.load_train_val()
+
+        if binary_classification:
+            y_train = y_train[:, 1]
+            y_test = y_test[:, 1]
+
         num_classes = len(class_names)
 
         # construct the image generator for data augmentation
@@ -62,7 +67,7 @@ class SingleLabelNetworkTrainer():
             fill_mode="nearest")
 
         optimizer = Adam(lr=init_lr, decay=init_lr / num_epochs)
-        model = self.compile_model(optimizer, num_classes, full_training,
+        model = self.compile_model(optimizer, 1 if binary_classification else num_classes, full_training,
                                    is_resuming)
         model.summary()
 
@@ -91,7 +96,7 @@ class SingleLabelNetworkTrainer():
 
     def compile_model(self, optimizer, num_classes, full_training,
                       is_resuming):
-        model = modify_base_model(self.base_model, 'softmax', num_classes,
+        model = modify_base_model(self.base_model, 'sigmoid' if num_classes == 1 else 'softmax', num_classes,
                                   full_training, is_resuming)
         model.compile(
             optimizer=optimizer,
