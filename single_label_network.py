@@ -43,7 +43,7 @@ class SingleLabelNetworkTrainer():
             config['image_height'] = image_height
             json.dump(config, f)
 
-    def train(self, init_lr, batch_size, num_epochs, is_fine_tuning,
+    def train(self, init_lr, batch_size, num_epochs, full_training,
               is_resuming):
         if self.val_file_path is None:
             x_train, x_test, y_train, y_test, class_names = self.load_dataset()
@@ -58,11 +58,11 @@ class SingleLabelNetworkTrainer():
             height_shift_range=0.1,
             shear_range=0.2,
             zoom_range=0.2,
-            horizontal_flip=True,
+            horizontal_flip=False,
             fill_mode="nearest")
 
         optimizer = Adam(lr=init_lr, decay=init_lr / num_epochs)
-        model = self.compile_model(optimizer, num_classes, is_fine_tuning,
+        model = self.compile_model(optimizer, num_classes, full_training,
                                    is_resuming)
         model.summary()
 
@@ -89,10 +89,10 @@ class SingleLabelNetworkTrainer():
             reduce_lr, early_stopping, *make_logging_callbacks(self.logs_dir)
         ]
 
-    def compile_model(self, optimizer, num_classes, is_fine_tuning,
+    def compile_model(self, optimizer, num_classes, full_training,
                       is_resuming):
         model = modify_base_model(self.base_model, 'softmax', num_classes,
-                                  is_fine_tuning, is_resuming)
+                                  full_training, is_resuming)
         model.compile(
             optimizer=optimizer,
             loss='binary_crossentropy',
@@ -125,7 +125,7 @@ class SingleLabelNetworkTrainer():
         # partition the data into training and testing splits using 75% of
         # the data for training and the remaining 25% for testing
         trainX, testX, trainY, testY = train_test_split(
-            data, all_labels, test_size=0.25, shuffle=False, random_state=42)
+            data, all_labels, test_size=0.25, shuffle=True, random_state=42)
         print(trainY)
         print(testY)
 

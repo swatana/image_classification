@@ -86,12 +86,12 @@ def main():
             base_model = EfficientNetB7(include_top=True, weights='imagenet')
         else:
             base_model = EfficientNetB7(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
-    elif model_path == 'NasNetLarge':
-        from tensorflow.keras.applications.nasnet import NasNetLarge     
+    elif model_path == 'NasNet':
+        from tensorflow.keras.applications.nasnet import NasNet     
         if image_height == image_width:  
-            base_model = NasNetLarge(include_top=True, weights='imagenet')
+            base_model = NasNet(include_top=True, weights='imagenet')
         else:
-            base_model = NasNetLarge(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
+            base_model = NasNet(include_top=True, weights='imagenet', input_tensor=Input(shape=(image_height, image_width, 3)))
     else:
         base_model = load_model(model_path)
 
@@ -100,7 +100,7 @@ def main():
     base_model.summary()
     trainer.base_model = base_model
 
-    trainer.train(init_lr, batch_size, num_epochs, not full_training,
+    trainer.train(init_lr, batch_size, num_epochs, full_training,
                   resume)
 
 

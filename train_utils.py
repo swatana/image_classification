@@ -59,7 +59,7 @@ def make_logging_callbacks(logs_dir):
     return [checkpointer, csv_logger, tensor_board]
 
 
-def modify_base_model(base_model, activation, num_classes, is_fine_tuning,
+def modify_base_model(base_model, activation, num_classes, full_training,
                       is_resuming):
     """Recreate the last layer of base model.
 
@@ -69,7 +69,7 @@ def modify_base_model(base_model, activation, num_classes, is_fine_tuning,
     """
 
     for layer in base_model.layers:
-        layer.trainable = not is_fine_tuning
+        layer.trainable = full_training
 
     if is_resuming:
         base_model.layers[-1].trainable = True
