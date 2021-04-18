@@ -60,8 +60,12 @@ def draw_img(model, image):
     predict = model.predict(image)
     print(predict)
 
-    class_names = open(class_path, 'r')
-    class_names = [line.split('\n')[0] for line in class_names.readlines()]
+    if class_path is not None:
+        class_names = open(class_path, 'r')
+        class_names = [line.split('\n')[0] for line in class_names.readlines()]
+    else:
+        class_names = ['True', 'False']
+        predict = [1.0 - predict[0], predict[0]]
     pprint(class_names)
 
     # build labels
@@ -99,12 +103,17 @@ ap.add_argument("-i", "--image_path",
 	help="path to input image")
 ap.add_argument("-v", "--video_path",
 	help="path to input video")
+ap.add_argument("--binary", action='store_true',
+    help="flag for binary classification")
 
 args = vars(ap.parse_args())
 if(args["image_path"] is None and args["video_path"] is None):
 	ap.error("missing arguments -v / --video_path and -i / --image_path")
 
-class_path = os.path.join(os.path.dirname(args["model"]), "classes.txt")
+if args["binary"]:
+    class_path = None
+else:
+    class_path = os.path.join(os.path.dirname(args["model"]), "classes.txt")
 model_path = args["model"] if args["model"] != None else class_path.split(".")[0]+".h5"
 
 print("[INFO] loading network...")
