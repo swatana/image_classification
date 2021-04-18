@@ -272,7 +272,7 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
             (recall + precision) if recall != -1 and precision != -1 else -1
         accuracy = (all_sum + 2 * result[i][i] - row_sum[i] -
                     col_sum[i]) / all_sum if all_sum != 0 else -1
-        y_score = predicts[:, i]
+        y_score = predicts[:, 0 if binary else i]
         y_true = [j == i for j in labels]
         all_score.extend(y_score)
         all_true.extend(y_true)

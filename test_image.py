@@ -65,7 +65,7 @@ def draw_img(model, image):
         class_names = [line.split('\n')[0] for line in class_names.readlines()]
     else:
         class_names = ['True', 'False']
-        predict = [1.0 - predict[0], predict[0]]
+        predict = [[float(predict[0]), 1.0 - float(predict[0])]]
     pprint(class_names)
 
     # build labels
