@@ -77,7 +77,7 @@ def create_polygon_json_from_mask(gray, filename, class_id=None):
     return line
 
 def predict_images(model, class_names, image_path_list=None, image_path=None, imshow=False, predict_dir=None,
-                   model_image_size=(28, 28), image_class=None):
+                   model_image_size=(28, 28), image_class=None, binary=False):
     FLAG = predict_dir is None
     if FLAG:
         predict_dir = os.path.join(
@@ -198,16 +198,21 @@ def predict_images(model, class_names, image_path_list=None, image_path=None, im
     return preds
 
 
-def test_network(model_object, test_data_path, model_path, model_image_size, thre_score):
+def test_network(model_object, test_data_path, model_path, model_image_size, thre_score, binary):
     model = model_object
     model_dir = os.path.dirname(model_path)
     test_data_dir = os.path.dirname(test_data_path)
     with open(os.path.join(model_dir, "config.json")) as f:
         config = json.load(f)
-    class_path = os.path.join(model_dir, "classes.txt")
-    with open(class_path) as fp:
-        class_names = [line.strip() for line in fp]
-    CLASS = len(class_names)
+
+    if binary:
+        class_names = ['False', 'True']
+        CLASS = 2
+    else:
+        class_path = os.path.join(model_dir, "classes.txt")
+        with open(class_path) as fp:
+            class_names = [line.strip() for line in fp]
+        CLASS = len(class_names)
 
     output_dir = os.path.join("results", get_unused_dir_num("results",
                     test_data_path.split('/')[-2] + '_' + config['base_model']))
@@ -257,6 +262,8 @@ def test_network(model_object, test_data_path, model_path, model_image_size, thr
     all_score = []
     all_true = []
     for i in range(CLASS):
+        if binary and class_names[i] != 'True':
+            continue
         recall = float(result[i][i]) / cnt_labels[i] if col_sum[i] != 0 else -1
         precision = float(result[i][i]) / row_sum[i] if row_sum[i] != 0 else -1
         specificity = float(
@@ -381,6 +388,8 @@ if __name__ == '__main__':
                         help="image width")
     ap.add_argument("-ih", "--image_height", type=int, default=299,
                         help="image height")
+    ap.add_argument("--binary", action='store_true',
+                        help="flag for binary classification")
     args = vars(ap.parse_args())
 
     model_path = args["model"]
@@ -398,7 +407,7 @@ if __name__ == '__main__':
         #                                                                                               "test_list.txt"))):
         #     test_dir = test_generator(test_dir)
         test_network(model_object=model, test_data_path=test_data_path, model_path=model_path,
-        model_image_size=(image_width, image_height), thre_score=args["thre_score"])
+        model_image_size=(image_width, image_height), thre_score=args["thre_score"], binary=args["binary"])
     else:
         # model_image_size = model.get_layer(name="conv2d_1").output_shape[1:3]
         class_path = os.path.join(os.path.dirname(model_path), "classes.txt")
