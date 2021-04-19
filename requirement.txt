@@ -5,4 +5,4 @@ imutils
 matplotlib
 Keras
 scikit_learn
-tensorflow
+tensorflow-gpu

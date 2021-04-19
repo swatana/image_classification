@@ -33,7 +33,7 @@ python3 test_generator.py -d data/vegetables
 ```
 python3 train_network.py -d [DATASET DIR]
 
-python3 train_network.py -t test_data/vegetables_000/train_list.txt -c test_data/vegetables_000/classes.txt -f --image_size 28
+python3 train_network.py -t test_data/vegetables_000/train_list.txt -f --image_size 28
 ```
 
 ## Test network
