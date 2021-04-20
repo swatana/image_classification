@@ -68,7 +68,7 @@ class SingleLabelNetworkTrainer():
 
         optimizer = Adam(lr=init_lr, decay=init_lr / num_epochs)
         model = self.compile_model(optimizer, 1 if binary_classification else num_classes, full_training,
-                                   is_resuming)
+                                   is_resuming, binary_classification)
         model.summary()
 
         # train the network
@@ -95,12 +95,12 @@ class SingleLabelNetworkTrainer():
         ]
 
     def compile_model(self, optimizer, num_classes, full_training,
-                      is_resuming):
+                      is_resuming, binary):
         model = modify_base_model(self.base_model, 'sigmoid' if num_classes == 1 else 'softmax', num_classes,
                                   full_training, is_resuming)
         model.compile(
             optimizer=optimizer,
-            loss='binary_crossentropy',
+            loss='mean_squared_error' if binary else 'binary_crossentropy',
             metrics=['accuracy'])
         return model
 
