@@ -20,7 +20,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import json
 
 class SingleLabelNetworkTrainer():
-    def __init__(self, train_file_path, val_file_path, classes_file_path, image_width, image_height, model_path, logs_dir=None):
+    def __init__(self, train_file_path, val_file_path, classes_file_path, image_width, image_height, model_path, logs_dir, binary_classification):
 
         self.train_file_path = train_file_path
         self.val_file_path = val_file_path
@@ -35,6 +35,7 @@ class SingleLabelNetworkTrainer():
         self.num_classes = len(class_names)
         self.image_width = image_width
         self.image_height = image_height
+        self.binary_classification = binary_classification
         config_path = os.path.join(logs_dir, "config.json");
         with open(config_path, "w") as f:
             config = {}
@@ -44,7 +45,8 @@ class SingleLabelNetworkTrainer():
             json.dump(config, f)
 
     def train(self, init_lr, batch_size, num_epochs, full_training,
-              is_resuming, binary_classification):
+              resume):
+        binary_classification = self.binary_classification
         if self.val_file_path is None:
             x_train, x_test, y_train, y_test, class_names = self.load_dataset()
         else:
@@ -68,7 +70,7 @@ class SingleLabelNetworkTrainer():
 
         optimizer = Adam(lr=init_lr, decay=init_lr / num_epochs)
         model = self.compile_model(optimizer, 1 if binary_classification else num_classes, full_training,
-                                   is_resuming, binary_classification)
+                                   resume, binary_classification)
         model.summary()
 
         # train the network
@@ -95,9 +97,9 @@ class SingleLabelNetworkTrainer():
         ]
 
     def compile_model(self, optimizer, num_classes, full_training,
-                      is_resuming, binary):
+                      resume, binary):
         model = modify_base_model(self.base_model, 'sigmoid' if num_classes == 1 else 'softmax', num_classes,
-                                  full_training, is_resuming)
+                                  full_training, resume)
         model.compile(
             optimizer=optimizer,
             loss='mean_squared_error' if binary else 'binary_crossentropy',

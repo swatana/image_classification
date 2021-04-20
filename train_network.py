@@ -41,7 +41,7 @@ def main():
                         help="image width")
     parser.add_argument("-ih", "--image_height", type=int, default=299,
                         help="image height")
-    parser.add_argument("--binary", action='store_true',
+    parser.add_argument("-bc", "--binary_classification", action='store_true',
                         help="flag for binary classification")
 
     args = parser.parse_args()
@@ -59,13 +59,14 @@ def main():
     full_training = args.full_training
     resume = args.resume
     class_file_path = os.path.join(os.path.dirname(train_file_path), "classes.txt")
+    binary_classification = args.binary_classification
 
     if logs_dir is None:
         logs_dir = os.path.join("logs", get_unused_dir_num("logs",train_file_path.split('/')[-2] + '_' + model_path))
     os.makedirs(logs_dir, exist_ok=True)
 
     trainer = SingleLabelNetworkTrainer(train_file_path, val_file_path, class_file_path, image_width, image_height,
-                                        model_path, logs_dir)
+                                        model_path, logs_dir, binary_classification)
     num_classes = trainer.num_classes
     # initialize the model
     print("[INFO] compiling model...")
@@ -103,7 +104,7 @@ def main():
     trainer.base_model = base_model
 
     trainer.train(init_lr, batch_size, num_epochs, full_training,
-                  resume, args.binary)
+                  resume)
 
 
 if __name__ == '__main__':

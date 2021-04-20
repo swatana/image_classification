@@ -66,13 +66,13 @@ CLASS = len(labelnames)
 # initialize the model
 print("[INFO] compiling model...")
 
-if args["model_path"]  == 'mobilenet':
+if model_path  == 'mobilenet':
 	from keras.applications.mobilenet import MobileNet
 	model = MobileNet(include_top=False, weights='imagenet')
-elif args["model_path"]  == 'inception_v3':
+elif model_path  == 'inception_v3':
 	from keras.applications.inception_v3 import InceptionV3
 	model = InceptionV3(include_top=True, weights='imagenet')
-elif(args["model_path"] is not None):
+elif(model_path is not None):
 	model = load_model(model_path)
 else:
 	from lenet import LeNet
@@ -80,7 +80,7 @@ else:
 pdir =  os.path.join("./model_data", dataset_name)
 model_output_dir = get_unused_dir_num(pdir)
 os.makedirs(model_output_dir, exist_ok=True)
-model_name = os.path.basename(args["model_path"]) if args["model_path"] is not None else "model.h5"
+model_name = os.path.basename(model_path) if model_path is not None else "model.h5"
 model_output_path = os.path.join(model_output_dir, model_name)
 print(model_output_dir)
 print(model_name)
