@@ -51,10 +51,12 @@ class SingleLabelNetworkTrainer():
             x_train, x_test, y_train, y_test, class_names = self.load_dataset()
         else:
             x_train, x_test, y_train, y_test, class_names = self.load_train_val()
-
+        print(y_test)
+        print(y_test)
         if binary_classification:
             y_train = y_train[:, 1]
             y_test = y_test[:, 1]
+        print(y_test)
 
         num_classes = len(class_names)
 
@@ -65,13 +67,21 @@ class SingleLabelNetworkTrainer():
             height_shift_range=0.1,
             shear_range=0.2,
             zoom_range=0.2,
-            horizontal_flip=False,
+            horizontal_flip=True,
             fill_mode="nearest")
 
         optimizer = Adam(lr=init_lr, decay=init_lr / num_epochs)
         model = self.compile_model(optimizer, 1 if binary_classification else num_classes, full_training,
                                    resume, binary_classification)
-        model.summary()
+        # model.summary()
+        
+        print(x_train, x_test, y_train, y_test, class_names)
+
+        # print(x_train, y_train)
+        print(init_lr)
+        print(len(x_train), len(y_train))
+        print(len(x_test), len(y_test))
+        print(len(x_train) // batch_size)
 
         # train the network
         print("[INFO] training network...")
@@ -92,8 +102,11 @@ class SingleLabelNetworkTrainer():
             monitor='val_loss', factor=0.2, patience=5, min_lr=1e-6)
         early_stopping = EarlyStopping(
             monitor='val_loss', patience=100, verbose=1)
+        # return [
+        #     reduce_lr, early_stopping, *make_logging_callbacks(self.logs_dir)
+        # ]
         return [
-            reduce_lr, early_stopping, *make_logging_callbacks(self.logs_dir)
+            *make_logging_callbacks(self.logs_dir)
         ]
 
     def compile_model(self, optimizer, num_classes, full_training,
@@ -156,8 +169,8 @@ class SingleLabelNetworkTrainer():
                 train_paths.append(img_path)
                 train_labels.append(int(class_ids))
 
-        with open(self.train_file_path) as train_fp:
-            for line in train_fp:
+        with open(self.val_file_path) as val_fp:
+            for line in val_fp:
                 img_path, class_ids = line.split()
                 val_paths.append(img_path)
                 val_labels.append(int(class_ids))

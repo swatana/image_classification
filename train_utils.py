@@ -49,7 +49,7 @@ def make_logging_callbacks(logs_dir):
     checkpointer = ModelCheckpoint(
         filepath=os.path.join(logs_dir,
                               'model.{epoch:02d}-{val_loss:.2f}.hdf5'),
-        verbose=1,
+        verbose=10,
         save_best_only=True,
     )
     csv_logger = CSVLogger(os.path.join(logs_dir, 'training.log'))
